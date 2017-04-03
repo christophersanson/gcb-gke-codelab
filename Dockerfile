@@ -1,7 +1,7 @@
 FROM node:4
 
 COPY package.json .
-RUN npm i
+RUN npm i --only=production
 
 COPY app app
 
