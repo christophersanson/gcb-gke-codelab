@@ -1,0 +1,10 @@
+FROM node:4
+
+COPY package.json .
+RUN npm i
+
+COPY app app
+CMD node app/app.js
+
+COPY test test
+CMD npm test
