@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: js-demo-be
+  labels:
+    app: js-demo
+    tier: js-demo-be
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: js-demo
+    tier: js-demo-be
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: js-demo-be
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: js-demo
+        tier: js-demo-be
+    spec:
+      containers:
+      - name: js-be
+        image: gcr.io/csanson-test/js-demo-be:189de633-434b-43f9-9329-2a89edba9df3
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+        ports:
+        - containerPort: 3000
