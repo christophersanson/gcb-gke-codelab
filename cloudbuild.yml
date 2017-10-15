@@ -19,12 +19,27 @@ steps:
     's|gcr.io/$PROJECT_ID/$_IMAGE_NAME:.*|gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID|g', 
     'k8s.yml'
   ]
+- name: 'gcr.io/cloud-builders/git'
+  args: [
+    '-c', 'user.email=""',
+    '-c', 'user.name="GCB Worker"',
+    'commit', '-a', '-m',
+    'Update k8s Deployment image to tag $BUILD_ID',
+    '-v'
+  ]
+- name: 'gcr.io/cloud-builders/git'
+  args: [
+    'push',
+    'https://d46f578e6680e34cd1b2eea826d68c7c2ab7351d@github.com/christophersanson/js-demo-be.git',
+    'master',
+    '-v'
+  ]
 # Apply change
-- name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s.yml']
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
+# - name: 'gcr.io/cloud-builders/kubectl'
+#   args: ['apply', '-f', 'k8s.yml']
+#   env:
+#   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
+#   - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
 # Push image to GCR
-images:
-- 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
+# images:
+# - 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
