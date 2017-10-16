@@ -1,7 +1,7 @@
 steps:
 # Pull the previously built image to use for --cache-from build
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:latest']
+  args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:latest'] # _IMAGE_NAME is a custom substitution
 # Build the new image. Tag with latest to pull for next build.
 # Tag with $BUILD_ID to create unique tag for k8s cluster to pull 
 - name: 'gcr.io/cloud-builders/docker'
