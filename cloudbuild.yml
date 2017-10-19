@@ -19,33 +19,33 @@ steps:
     'k8s.yml'
   ]
 # Commit k8s.yml change to the repo
-# - name: 'gcr.io/cloud-builders/git'
-#   args: [
-#     '-c', 'user.email=""',
-#     '-c', 'user.name="GCB Worker"',
-#     'commit', '-am',
-#     'Update k8s Deployment image to tag $BUILD_ID [ci skip]',
-#     '-v'
-#   ]
+- name: 'gcr.io/cloud-builders/git'
+  args: [
+    '-c', 'user.email=""',
+    '-c', 'user.name="GCB Worker"',
+    'commit', '-a', '-m',
+    'Update k8s Deployment image to tag $BUILD_ID [ci skip]',
+    '-v'
+  ]
 # Push change to GitHub repo using encrypted secret
-# - name: 'gcr.io/cloud-builders/git'
-#   entrypoint: 'bash'
-#   args: [
-#     '-c',
-#     'git push https://$$GITHUB_TOKEN@github.com/christophersanson/js-demo-be.git master -v'
-#   ]
-#   secretEnv: ['GITHUB_TOKEN']
+- name: 'gcr.io/cloud-builders/git'
+  entrypoint: 'bash'
+  args: [
+    '-c',
+    'git push https://$$GITHUB_TOKEN@github.com/christophersanson/js-demo-be.git master -v'
+  ]
+  secretEnv: ['GITHUB_TOKEN']
 # Apply change
-# - name: 'gcr.io/cloud-builders/kubectl'
-#   args: ['apply', '-f', 'k8s.yml']
-#   env:
-#   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
-#   - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', 'k8s.yml']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
 # Push image to GCR
 images:
 - 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
 # Encrypt Github token for push changes
-# secrets:
-# - kmsKeyName: projects/csanson-test/locations/global/keyRings/js-demo-be/cryptoKeys/github-token
-#   secretEnv:
-#     GITHUB_TOKEN: CiQAbhNgM1F4lsL8uNZHUbtwGVmGGXgv+VVxCn03Oa28xs5ccRwSUADhjamOVE7JpLxxbws/TxqECnR5BawRxUNzHNB5GCmCzP9nxA1s+1wneXmN+Z463yWoqFPpJ+ekYN0M1BZ9+QxauwTqNuSJ5G3kJJ4yy2Hl
+secrets:
+- kmsKeyName: projects/csanson-test/locations/global/keyRings/js-demo-be/cryptoKeys/github-token
+  secretEnv:
+    GITHUB_TOKEN: CiQAbhNgM1F4lsL8uNZHUbtwGVmGGXgv+VVxCn03Oa28xs5ccRwSUADhjamOVE7JpLxxbws/TxqECnR5BawRxUNzHNB5GCmCzP9nxA1s+1wneXmN+Z463yWoqFPpJ+ekYN0M1BZ9+QxauwTqNuSJ5G3kJJ4yy2Hl
