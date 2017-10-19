@@ -45,7 +45,7 @@ steps:
 images:
 - 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
 # Encrypt Github token for push changes
-secrets:
-- kmsKeyName: projects/csanson-test/locations/global/keyRings/js-demo-be/cryptoKeys/github-token
-  secretEnv:
-    GITHUB_TOKEN: CiQAbhNgM1F4lsL8uNZHUbtwGVmGGXgv+VVxCn03Oa28xs5ccRwSUADhjamOVE7JpLxxbws/TxqECnR5BawRxUNzHNB5GCmCzP9nxA1s+1wneXmN+Z463yWoqFPpJ+ekYN0M1BZ9+QxauwTqNuSJ5G3kJJ4yy2Hl
+# secrets:
+# - kmsKeyName: projects/csanson-test/locations/global/keyRings/js-demo-be/cryptoKeys/github-token
+#   secretEnv:
+#     GITHUB_TOKEN: CiQAbhNgM1F4lsL8uNZHUbtwGVmGGXgv+VVxCn03Oa28xs5ccRwSUADhjamOVE7JpLxxbws/TxqECnR5BawRxUNzHNB5GCmCzP9nxA1s+1wneXmN+Z463yWoqFPpJ+ekYN0M1BZ9+QxauwTqNuSJ5G3kJJ4yy2Hl
