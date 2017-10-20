@@ -58,7 +58,7 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
 
-# Push image to GCR
+# Associate image that was pushed to GCR with the build history UI
 images:
 - 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
 
