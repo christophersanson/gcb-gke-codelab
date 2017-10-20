@@ -13,6 +13,10 @@ steps:
     '.' 
   ]
 
+# Push updated image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["push", "gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID"]
+
 # Replace the image tag in the k8s Deployment
 - name: 'ubuntu'
   args: [ 
