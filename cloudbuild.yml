@@ -2,6 +2,7 @@ steps:
 # Pull the previous image to --cache-from
 - name: 'gcr.io/cloud-builders/docker'
   args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:latest'] # _IMAGE_NAME is a custom substitution
+
 # Build the new image 
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 
@@ -11,6 +12,7 @@ steps:
     '-t', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID', 
     '.' 
   ]
+
 # Replace the image tag in the k8s Deployment
 - name: 'ubuntu'
   args: [ 
@@ -18,6 +20,7 @@ steps:
     's|gcr.io/$PROJECT_ID/$_IMAGE_NAME:.*|gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID|g', 
     'k8s.yml'
   ]
+
 # Commit k8s.yml change to the repo
 - name: 'gcr.io/cloud-builders/git'
   args: [
@@ -27,6 +30,7 @@ steps:
     'Update k8s Deployment image to tag $BUILD_ID [ci skip]',
     '-v'
   ]
+
 # Push change to GitHub repo using encrypted secret
 - name: 'gcr.io/cloud-builders/git'
   entrypoint: 'bash'
@@ -35,15 +39,18 @@ steps:
     'git push https://$$GITHUB_TOKEN@github.com/christophersanson/js-demo-be.git master -v'
   ]
   secretEnv: ['GITHUB_TOKEN']
+
 # Apply change
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', 'k8s.yml']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
+
 # Push image to GCR
 images:
 - 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID'
+
 # Encrypt Github token for push changes
 secrets:
 - kmsKeyName: projects/csanson-test/locations/global/keyRings/js-demo-be/cryptoKeys/github-token
