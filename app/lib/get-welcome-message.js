@@ -1,3 +1,3 @@
 module.exports = () => {
-    return 'Hello cloud startups!'
+    return 'Hello Graphite meetup!'
 }
