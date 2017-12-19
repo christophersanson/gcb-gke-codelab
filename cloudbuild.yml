@@ -1,10 +1,12 @@
 steps:
 # Pull the previous image to --cache-from
-- name: 'gcr.io/cloud-builders/docker'
+- id: 'pull previous image'
+  name: 'gcr.io/cloud-builders/docker'
   args: ['pull', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:latest'] # _IMAGE_NAME is a custom substitution
 
 # Build the new image 
-- name: 'gcr.io/cloud-builders/docker'
+- id: 'build image'
+  name: 'gcr.io/cloud-builders/docker'
   args: [ 
     'build', 
     '--cache-from', 'gcr.io/$PROJECT_ID/$_IMAGE_NAME:latest', 
@@ -14,11 +16,13 @@ steps:
   ]
 
 # Push updated image
-- name: 'gcr.io/cloud-builders/docker'
+- id: 'push image'
+  name: 'gcr.io/cloud-builders/docker'
   args: ["push", "gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID"]
 
 # Replace the image tag in the k8s Deployment
-- name: 'ubuntu'
+- id: 'update manifest file'
+  name: 'ubuntu'
   args: [ 
     'sed', '-i',
     's|gcr.io/$PROJECT_ID/$_IMAGE_NAME:.*|gcr.io/$PROJECT_ID/$_IMAGE_NAME:$BUILD_ID|g', 
@@ -26,7 +30,8 @@ steps:
   ]
 
 # Commit k8s.yml change to the repo
-- name: 'gcr.io/cloud-builders/git'
+- id: 'commit update manifest to repo'
+  name: 'gcr.io/cloud-builders/git'
   args: [
     '-c', 'user.email=""',
     '-c', 'user.name="GCB Worker"',
@@ -36,7 +41,8 @@ steps:
   ]
 
 # Push change to GitHub repo using encrypted secret
-- name: 'gcr.io/cloud-builders/git'
+- id: 'git push change' 
+  name: 'gcr.io/cloud-builders/git'
   entrypoint: 'bash'
   args: [
     '-c',
@@ -45,14 +51,16 @@ steps:
   secretEnv: ['GITHUB_TOKEN']
 
 # Apply change
-- name: 'gcr.io/cloud-builders/kubectl'
+- id: 'kubectl apply updated manifest'
+  name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', 'k8s.yml']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=gcb-demo'
 
 # Check rollout status
-- name: 'gcr.io/cloud-builders/kubectl'
+- id: 'check rollout status'
+  name: 'gcr.io/cloud-builders/kubectl'
   args: ['rollout', 'status', 'deployment/js-demo-be']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
