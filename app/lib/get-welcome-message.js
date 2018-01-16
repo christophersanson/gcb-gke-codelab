@@ -1,3 +1,3 @@
 module.exports = () => {
-    return 'Hello Accelerate!'
+    return 'Hello world!'
 }
