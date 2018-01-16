@@ -10,6 +10,12 @@
     ```
     gcloud components install kubectl
     ``` 
+### Clone the Repo
+
+```
+git clone https://github.com/christophersanson/gcb-gke-codelab.git
+cd gcb-gke-codelab
+```
 
 ### Create a GCP project
 
@@ -97,6 +103,13 @@ APP_NAME=my-app
 
 ### Create k8s Resources
 
+_Wait for cluster to be running to execute this section_
+
+Get cluster credentials and make available to kubectl
+```
+gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${COMPUTE_ZONE}
+```
+
 ```
 mkdir k8s
 ```
@@ -114,11 +127,6 @@ Create Service and Deployment resources
 kubectl create -f k8s/
 ```
 
-Get cluster credentials and make available to kubectl
-```
-gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${COMPUTE_ZONE}
-```
-
 List Service
 ```
 kubectl get service ${APP_NAME}
@@ -129,7 +137,7 @@ Note the external IP address. Save it for later.
 URL=http://<service-external-ip>
 ```
 
-### Create a cloudbuild.yaml file
+### Create a build pipeline config file
 
 ```
 touch cloudbuild.yaml
@@ -207,11 +215,13 @@ images:
 - 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA'
 ```
 
+_Save the image_
+
 ### Test the pipeline
 
 ```
 gcloud container builds submit . \
-    --config cloudbuild-example.yaml \
+    --config cloudbuild.yaml \
     --substitutions \
         _APP_NAME=${APP_NAME},_CLOUDSDK_COMPUTE_ZONE=${COMPUTE_ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER_NAME},SHORT_SHA=xxx
 ```
@@ -238,17 +248,18 @@ open https://console.cloud.google.com/gcr/triggers?project=${PROJECT_ID}
 Follow prompts to OAuth into GitHub and select your repo. 
 
 Create trigger with following:
-- Name: Deploy on push to master
-- Trigger type: branch
-- Branch: master
-- Build configuration: cloudbuild.yaml
-- cloudbuild.yaml location: cloudbuild.yaml
-- Substitution variables:
-    - _CLOUDSDK_CONTAINER_CLUSTER: <CLUSTER_NAME>
-    - _CLOUDSDK_COMPUTE_ZONE: <COMPUTE_ZONE>
-    - _APP_NAME: <_APP_NAME>
+| Field                 | Value        |
+| -------------          |-------------|
+| Name                   | Deploy on push to master |
+| Trigger type           | branch      |
+| Branch | master        |
+| Build configuration    | cloudbuild.yaml      |
+| cloudbuild.yaml location | cloudbuild.yaml      |
+| Substitution variables | _CLOUDSDK_CONTAINER_CLUSTER: <CLUSTER_NAME> |
+|                        | _CLOUDSDK_COMPUTE_ZONE: <COMPUTE_ZONE> |
+|                        | _APP_NAME: <_APP_NAME> |
 
-Save Trigger
+_Save Trigger_
 
 ### Test the Trigger
 
@@ -273,8 +284,19 @@ open ${URL}
 ```
 
 ## Cleanup
-- Delete the GCP Project: ${PROJECT_NAME}
-- Delete the GitHub repo you cloned: gcb-gke-codelab
+Delete the GCP Project:
+```
+gcloud projects delete ${PROJECT_ID}
+```
+
+Delete the GitHub repo
+```
+GITHUB_USERNAME=christophersanson
+REPO=gcb-gke-codelab
+```
+```
+curl -X DELETE "https://api.github.com/repos/${GITHUB_USERNAME}/${repo}"
+```
 
 ## Next Steps
 
