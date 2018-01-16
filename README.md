@@ -215,7 +215,7 @@ images:
 - 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA'
 ```
 
-_Save the image_
+_Save the file_
 
 ### Test the pipeline
 
@@ -249,6 +249,7 @@ open https://console.cloud.google.com/gcr/triggers?project=${PROJECT_ID}
 Follow prompts to OAuth into GitHub and select your repo. 
 
 Create trigger with following:
+
 | Field                 | Value        |
 | -------------          |-------------|
 | Name                   | Deploy on push to master |
