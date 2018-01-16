@@ -285,6 +285,20 @@ Check that your change is live
 open ${URL}
 ```
 
+## Next Steps
+
+This was intended as a quickstart codelab for familiarizing yourself with GKE, GCB, and setting up a CICD pipeline. 
+
+For a more real-world pipeline, see this [pipeline tutorial](https://github.com/kelseyhightower/pipeline) or evolve this project and implement some of the following:
+
+- Browse the [supported](https://github.com/GoogleCloudPlatform/cloud-builders) and [community contributed](https://github.com/GoogleCloudPlatform/cloud-builders-community) builder images to get a sense of available functionality
+- Speed up your build by pulling in your previously built image and doing a --cache-from build
+- Commit updates to manifest files back to repo to keep as source of truth. Use hub CLI tool to commit changes back to repo from build.
+- Create multiple cluster like qa, staging, and prod, and create additional build triggers connecting them, e.g. deploy to qa on push to a feature branch, push to prod on git tag. 
+- Separate infrastructure manifest files from application code
+- Use PRs as manual gates for promoting changes to prod without rebuilding
+- See Kelsey Hightower's production-ready [pipeline tutorial](https://github.com/kelseyhightower/pipeline) for an example of these and other best practices
+
 ## Cleanup
 Delete the GCP Project:
 ```
@@ -299,17 +313,3 @@ REPO=gcb-gke-codelab
 ```
 curl -X DELETE "https://api.github.com/repos/${GITHUB_USERNAME}/${repo}"
 ```
-
-## Next Steps
-
-This was intended as a quickstart codelab for familiarizing yourself with GKE, GCB, and setting up a CICD pipeline. 
-
-For a more real-world pipeline, see this [pipeline tutorial](https://github.com/kelseyhightower/pipeline) or evolve this project and implement some of the following:
-
-- Browse the [supported](https://github.com/GoogleCloudPlatform/cloud-builders) and [community contributed](https://github.com/GoogleCloudPlatform/cloud-builders-community) builder images to get a sense of available functionality
-- Speed up your build by pulling in your previously built image and doing a --cache-from build
-- Commit updates to manifest files back to repo to keep as source of truth. Use hub CLI tool to commit changes back to repo from build.
-- Create multiple cluster like qa, staging, and prod, and create additional build triggers connecting them, e.g. deploy to qa on push to a feature branch, push to prod on git tag. 
-- Separate infrastructure manifest files from application code
-- Use PRs as manual gates for promoting changes to prod without rebuilding
-- See Kelsey Hightower's production-ready [pipeline tutorial](https://github.com/kelseyhightower/pipeline) for an example of these and other best practices
