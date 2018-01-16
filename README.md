@@ -20,15 +20,13 @@ PROJECT_NAME=gke-pipeline
 ```
 PROJECT_ID=$(gcloud projects create --name "${PROJECT_NAME}" --format='value(projectId)')
 ```
-#### At the prompt type 'y' to accept generated project id.
+_At the prompt type 'y' to accept generated project id._
 
----
 Set the default project:
 ```
 gcloud config set project ${PROJECT_ID}
 ```
 
----
 Set the default zone:
 ```
 COMPUTE_ZONE=us-west1-c
@@ -37,22 +35,19 @@ COMPUTE_ZONE=us-west1-c
 gcloud config set compute/zone ${COMPUTE_ZONE}
 ```
 
----
 Ensure the default credentials are available on your local machine:
 ```
 gcloud auth application-default login
 ```
 
----
 Enable Billing on your project:
 
-Mac
+On Mac:
 ```
 open https://console.developers.google.com/project/${PROJECT_ID}/settings
 ```
-#### Use xdg-open with Linux
+_Use xdg-open with Linux_
 
----
 Enable the required GCP APIs:
 ```
 gcloud services enable --async \
@@ -65,7 +60,7 @@ gcloud services enable --async \
   containerregistry.googleapis.com \
   logging.googleapis.com
 ```
-##### Use `gcloud services list --enabled` to check progress
+_Use `gcloud services list --enabled` to check progress_
 
 ### Create a GKE cluster
 
@@ -82,7 +77,6 @@ It can take up to five minutes to provision the Kubernetes clusters. Use the gcl
 gcloud container clusters list
 ```
 
----
 Grant the Container Builder service account developer access to the GKE API to fetch credentials and apply changes to the cluster.
 ```
 PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format='value(projectNumber)')
@@ -120,15 +114,98 @@ Create Service and Deployment resources
 kubectl create -f k8s/
 ```
 
-### Create a cloudbuild.yaml file
+Get cluster credentials and make available to kubectl
+```
+gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${COMPUTE_ZONE}
+```
 
-TODO
+List Service
+```
+kubectl get service ${APP_NAME}
+```
+
+Note the external IP address. Save it for later.
+```
+URL=http://<service-external-ip>
+```
+
+### Create a cloudbuild.yaml file
 
 ```
 touch cloudbuild.yaml
 ```
-#### Open cloudbuild.yaml in your favorite editor
-...
+
+_Open cloudbuild.yaml in your favorite editor_
+
+_Copy/paste the following into cloudbuild.yaml:_
+
+Add docker build step:
+```
+steps:
+# Build the image 
+- id: 'Build docker image'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA', '.' ]
+```
+
+Push image to registry:
+```
+# Push updated image
+- id: 'Push image to registry'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA' ]
+```
+
+Patch Deployment manifest file:
+
+```
+# Patch the Deployment
+- id: 'Patch manifest with new image'
+  name: 'gcr.io/cloud-builders/kubectl'
+  entrypoint: 'sh'
+  env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
+  args: 
+    - '-c'
+    - |
+      gcloud container clusters get-credentials \
+        --project="${PROJECT_ID}" --zone="${_CLOUDSDK_COMPUTE_ZONE}" "${_CLOUDSDK_CONTAINER_CLUSTER}"
+
+      cat <<EOF > patch.yaml
+      spec:
+        template:
+          spec:
+            containers:
+              - name: ${_APP_NAME}
+                image: gcr.io/${PROJECT_ID}/${_APP_NAME}:${SHORT_SHA}
+      EOF
+
+      kubectl patch --local -o yaml \
+        -f k8s/deployment.yaml \
+        -p "$(cat patch.yaml)" \
+        > deployment.yaml
+      
+      mv deployment.yaml k8s/deployment.yaml
+```
+
+Apply change to the GKE cluster:
+```
+# Apply change
+- id: 'Apply update to cluster'
+  name: 'gcr.io/cloud-builders/kubectl'
+  args: [ 'apply', '-f', 'k8s/']
+  env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
+```
+
+Tell the build that you created an image:
+```
+# Associate image that was pushed to GCR with the build history UI
+images:
+- 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA'
+```
 
 ### Test the pipeline
 
@@ -139,16 +216,75 @@ gcloud container builds submit . \
         _APP_NAME=${APP_NAME},_CLOUDSDK_COMPUTE_ZONE=${COMPUTE_ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER_NAME},SHORT_SHA=xxx
 ```
 
+See if it worked:
+```
+open ${URL}
+```
+
 ## Create the Trigger
 
+We're going to create a build trigger that will kick off the build and deploy pipeline on changes to source code.
+
+### Get your environment variable values
+```
+echo ${APP_NAME} ${COMPUTE_ZONE} ${CLUSTER_NAME}
+```
+
+### Go to Build Triggers page in Cloud Console
+```
+open https://console.cloud.google.com/gcr/triggers?project=${PROJECT_ID}
+```
+
+Follow prompts to OAuth into GitHub and select your repo. 
+
+Create trigger with following:
+- Name: Deploy on push to master
+- Trigger type: branch
+- Branch: master
+- Build configuration: cloudbuild.yaml
+- cloudbuild.yaml location: cloudbuild.yaml
+- Substitution variables:
+    - _CLOUDSDK_CONTAINER_CLUSTER: <CLUSTER_NAME>
+    - _CLOUDSDK_COMPUTE_ZONE: <COMPUTE_ZONE>
+    - _APP_NAME: <_APP_NAME>
+
+Save Trigger
+
+### Test the Trigger
+
+Update the hello message at `app/lib/get-welcome-message.js`
+
+```
+git add .
+git commit -m 'your message'
+git push
+```
+
+A new build should kick off. When complete you should see your new welcome message.
+
+Check build status
+```
+open https://console.cloud.google.com/gcr/builds?project=${PROJECT_ID}
+```
+
+Check that your change is live
+```
+open ${URL}
+```
 
 ## Cleanup
+- Delete the GCP Project: ${PROJECT_NAME}
+- Delete the GitHub repo you cloned: gcb-gke-codelab
 
 ## Next Steps
-- Keep k8s manifest files in repo under version control
-- Commit updates to manifest files back to repo to keep as source of truth
-- Add multiple environments - qa, staging, prod
+
+This was intended as a quickstart codelab for familiarizing yourself with GKE, GCB, and setting up a CICD pipeline. 
+
+For a more real-world pipeline, see this pipeline tutorial or evolve this project and implement some of the following:
+
+- Speed up your build by pulling in your previously built image and doing a --cache-from build
+- Commit updates to manifest files back to repo to keep as source of truth. Use hub CLI tool to commit changes back to repo from build.
+- Create multiple cluster like qa, staging, and prod, and create additional build triggers connecting them, e.g. deploy to qa on push to a feature branch, push to prod on git tag. 
 - Separate infrastructure manifest files from application code
-- Add manifest files for Services, ConfigMaps, etc
 - Use PRs as manual gates for promoting changes to prod without rebuilding
-- See Kelsey Hightower's production-ready pipeline tutorial for implementations of these best practices
+- See Kelsey Hightower's production-ready [pipeline tutorial](https://github.com/kelseyhightower/pipeline) for an example of these and other best practices
