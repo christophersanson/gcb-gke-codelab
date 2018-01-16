@@ -124,7 +124,7 @@ kubectl create service loadbalancer ${APP_NAME} --tcp=80:3000 --dry-run -o yaml 
 ```
 Create Service and Deployment resources
 ```
-kubectl create -f k8s/
+kubectl apply -f k8s/
 ```
 
 List Service
@@ -132,7 +132,7 @@ List Service
 kubectl get service ${APP_NAME}
 ```
 
-Note the external IP address. Save it for later.
+Note the external IP address once it's provisioned. Save it for later.
 ```
 URL=http://<service-external-ip>
 ```
@@ -219,6 +219,7 @@ _Save the image_
 
 ### Test the pipeline
 
+Manually trigger a build from the CLI
 ```
 gcloud container builds submit . \
     --config cloudbuild.yaml \
@@ -302,8 +303,9 @@ curl -X DELETE "https://api.github.com/repos/${GITHUB_USERNAME}/${repo}"
 
 This was intended as a quickstart codelab for familiarizing yourself with GKE, GCB, and setting up a CICD pipeline. 
 
-For a more real-world pipeline, see this pipeline tutorial or evolve this project and implement some of the following:
+For a more real-world pipeline, see this [pipeline tutorial](https://github.com/kelseyhightower/pipeline) or evolve this project and implement some of the following:
 
+- Browse the [supported](https://github.com/GoogleCloudPlatform/cloud-builders) and [community contributed](https://github.com/GoogleCloudPlatform/cloud-builders-community) builder images to get a sense of available functionality
 - Speed up your build by pulling in your previously built image and doing a --cache-from build
 - Commit updates to manifest files back to repo to keep as source of truth. Use hub CLI tool to commit changes back to repo from build.
 - Create multiple cluster like qa, staging, and prod, and create additional build triggers connecting them, e.g. deploy to qa on push to a feature branch, push to prod on git tag. 
