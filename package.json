@@ -1,7 +1,7 @@
 {
-  "name": "cd-pipeline-test",
+  "name": "gcb-gke-codelab",
   "version": "0.0.0",
-  "description": "Test app for GCP CD pipeline",
+  "description": "Simple GCB to GKE CICD Pipeline Codelab",
   "main": "app/app.js",
   "scripts": {
     "start": "node app/app.js",
@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://source.developers.google.com/p/csanson-test/r/cd-pipeline-test"
+    "url": "https://github.com/christophersanson/gcb-gke-codelab"
   },
-  "author": "csanson",
-  "license": "BSD-2-Clause",
+  "author": "christophersanson",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.14.0"
   },
