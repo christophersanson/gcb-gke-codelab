@@ -19,7 +19,10 @@ After the fork is complete, click the green "clone or download" link, and copy t
 Next, clone your fork of the repository:
 
 ```
-git clone https://github.com/<YOUR-GITHUB-USERNAME>/gcb-gke-codelab.git
+USERNAME=<GITHUB_USERNAME>
+```
+```
+git clone https://github.com/${USERNAME}/gcb-gke-codelab.git
 cd gcb-gke-codelab
 ```
 
@@ -27,7 +30,6 @@ cd gcb-gke-codelab
 
 Create a new GCP project and capture the projectId in the PROJECT_ID env var:
 ```
-USERNAME=csanson
 PROJECT_NAME=gke-pipeline-${USERNAME}
 ```
 ```
