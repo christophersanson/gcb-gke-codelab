@@ -21,7 +21,8 @@ cd gcb-gke-codelab
 
 Create a new GCP project and capture the projectId in the PROJECT_ID env var:
 ```
-PROJECT_NAME=gke-pipeline
+USERNAME=csanson
+PROJECT_NAME=gke-pipeline-${USERNAME}
 ```
 ```
 PROJECT_ID=$(gcloud projects create --name "${PROJECT_NAME}" --format='value(projectId)')
@@ -52,7 +53,7 @@ On Mac:
 ```
 open https://console.developers.google.com/project/${PROJECT_ID}/settings
 ```
-_Use xdg-open with Linux_
+_Use xdg-open with Linux, start with Windows_
 
 Enable the required GCP APIs:
 ```
