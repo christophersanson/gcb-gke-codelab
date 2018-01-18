@@ -134,16 +134,6 @@ Create Service and Deployment resources
 kubectl apply -f k8s/
 ```
 
-List Service
-```
-kubectl get service ${APP_NAME}
-```
-
-Note the external IP address once it's provisioned. Save it for later.
-```
-URL=http://<service-external-ip>
-```
-
 ### Create a build pipeline config file
 
 ```
@@ -237,6 +227,17 @@ gcloud container builds submit . \
 See if it worked:
 ```
 open ${URL}
+```
+
+### Get the app url
+List Service
+```
+kubectl get service ${APP_NAME}
+```
+
+Note the external IP address once it's provisioned. Save it for later.
+```
+URL=http://<service-external-ip>
 ```
 
 ## Create the Trigger
