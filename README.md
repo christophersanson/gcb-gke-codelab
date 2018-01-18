@@ -317,9 +317,8 @@ gcloud projects delete ${PROJECT_ID}
 
 Delete the GitHub repo
 ```
-GITHUB_USERNAME=christophersanson
 REPO=gcb-gke-codelab
 ```
 ```
-curl -X DELETE "https://api.github.com/repos/${GITHUB_USERNAME}/${repo}"
+curl -X DELETE "https://api.github.com/repos/${USERNAME}/${repo}"
 ```
