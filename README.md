@@ -226,11 +226,6 @@ gcloud container builds submit . \
         _APP_NAME=${APP_NAME},_CLOUDSDK_COMPUTE_ZONE=${COMPUTE_ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER_NAME},SHORT_SHA=xxx
 ```
 
-See if it worked:
-```
-open ${URL}
-```
-
 ### Get the app url
 List Service
 ```
@@ -240,6 +235,11 @@ kubectl get service ${APP_NAME}
 Note the external IP address once it's provisioned. Save it for later.
 ```
 URL=http://<service-external-ip>
+```
+
+See if it worked:
+```
+open ${URL}
 ```
 
 ## Create the Trigger
