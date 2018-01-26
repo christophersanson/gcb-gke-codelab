@@ -1,0 +1,51 @@
+steps:
+# Build the image
+- id: 'Build docker image'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA', '.' ]
+
+# Push updated image
+- id: 'Push image to registry'
+  name: 'gcr.io/cloud-builders/docker'
+  args: [ 'push', 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA' ]
+
+# Patch the Deployment
+- id: 'Patch manifest with new image'
+  name: 'gcr.io/cloud-builders/kubectl'
+  entrypoint: 'sh'
+  env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
+  args:
+    - '-c'
+    - |
+      gcloud container clusters get-credentials \
+        --project="${PROJECT_ID}" --zone="${_CLOUDSDK_COMPUTE_ZONE}" "${_CLOUDSDK_CONTAINER_CLUSTER}"
+
+      cat <<EOF > patch.yaml
+      spec:
+        template:
+          spec:
+            containers:
+              - name: ${_APP_NAME}
+                image: gcr.io/${PROJECT_ID}/${_APP_NAME}:${SHORT_SHA}
+      EOF
+
+      kubectl patch --local -o yaml \
+        -f k8s/deployment.yaml \
+        -p "$(cat patch.yaml)" \
+        > deployment.yaml
+
+      mv deployment.yaml k8s/deployment.yaml
+
+# Apply change
+- id: 'Apply update to cluster'
+  name: 'gcr.io/cloud-builders/kubectl'
+  args: [ 'apply', '-f', 'k8s/']
+  env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
+
+# Associate image that was pushed to GCR with the build history UI
+images:
+- 'gcr.io/$PROJECT_ID/$_APP_NAME:$SHORT_SHA'
