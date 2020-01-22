@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: checkbox-cd
+  name: checkbox-cd
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkbox-cd
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: checkbox-cd
+    spec:
+      containers:
+        - image: >-
+            gcr.io/cloud-build-on-custom-workers/github.com/christophersanson/gcb-gke-codelab
+          imagePullPolicy: IfNotPresent
+          name: hello-app-sha256
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: checkbox-cd
+  name: checkbox-cd-hpa
+  namespace: default
+spec:
+  maxReplicas: 5
+  metrics:
+    - resource:
+        name: cpu
+        targetAverageUtilization: 80
+      type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkbox-cd
